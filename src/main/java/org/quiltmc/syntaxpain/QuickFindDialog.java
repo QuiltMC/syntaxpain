@@ -291,6 +291,7 @@ public class QuickFindDialog extends JDialog implements DocumentListener, Action
 				this.statusLabel.setText(this.notFound);
 			} else {
 				this.statusLabel.setText(null);
+				this.fixOverlappedCaret();
 			}
 		} catch (PatternSyntaxException e) {
 			this.statusLabel.setText(e.getDescription());
