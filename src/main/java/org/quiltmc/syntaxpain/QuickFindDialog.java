@@ -1,6 +1,7 @@
 package org.quiltmc.syntaxpain;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -54,6 +55,8 @@ public class QuickFindDialog extends JDialog implements DocumentListener, Action
 	protected JCheckBox ignoreCaseCheckBox;
 	protected JCheckBox regexCheckBox;
 	protected JCheckBox wrapCheckBox;
+	protected JCheckBox persistentCheckBox;
+	protected JButton closeButton;
 
 	protected String prev = "prev";
 	protected String next = "next";
@@ -62,6 +65,8 @@ public class QuickFindDialog extends JDialog implements DocumentListener, Action
 	protected String useRegex = "Use regex";
 	protected String wrap = "Wrap";
 	protected String notFound = "Not found";
+	protected String persistent = "Persistent";
+	protected String close = "Close";
 
 	public QuickFindDialog(JTextComponent target) {
 		this(target, DocumentSearchData.getFromEditor(target));
@@ -98,11 +103,13 @@ public class QuickFindDialog extends JDialog implements DocumentListener, Action
 		WindowFocusListener focusListener = new WindowAdapter() {
 			@Override
 			public void windowLostFocus(WindowEvent e) {
-				target.getDocument().removeDocumentListener(QuickFindDialog.this);
-				Markers.removeMarkers(target, QuickFindDialog.this.marker);
-				QuickFindDialog.this.removeWindowListener(this);
-				QuickFindDialog.this.setVisible(false);
-				target.requestFocus();
+				if (!QuickFindDialog.this.persistentCheckBox.isSelected()) {
+					target.getDocument().removeDocumentListener(QuickFindDialog.this);
+					Markers.removeMarkers(target, QuickFindDialog.this.marker);
+					QuickFindDialog.this.removeWindowListener(this);
+					QuickFindDialog.this.setVisible(false);
+					target.requestFocus();
+				}
 			}
 		};
 		this.addWindowFocusListener(focusListener);
@@ -137,6 +144,8 @@ public class QuickFindDialog extends JDialog implements DocumentListener, Action
 		this.ignoreCaseCheckBox = new JCheckBox(this.ignoreCase);
 		this.regexCheckBox = new JCheckBox(this.useRegex);
 		this.wrapCheckBox = new JCheckBox(this.wrap);
+		this.persistentCheckBox = new JCheckBox(this.persistent);
+		this.closeButton = new JButton(this.close);
 
 		this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		this.setBackground(Color.DARK_GRAY);
@@ -146,6 +155,7 @@ public class QuickFindDialog extends JDialog implements DocumentListener, Action
 		toolBar.setBorder(BorderFactory.createEtchedBorder());
 		toolBar.setFloatable(false);
 		toolBar.setRollover(true);
+
 		toolBar.addSeparator();
 
 		this.searchField.setColumns(30);
@@ -195,6 +205,24 @@ public class QuickFindDialog extends JDialog implements DocumentListener, Action
 		toolBar.addSeparator();
 		toolBar.add(this.statusLabel);
 
+		// push the rest of the components to the right
+		toolBar.add(Box.createHorizontalGlue());
+
+		this.persistentCheckBox.setFocusable(false);
+		this.persistentCheckBox.setOpaque(false);
+		this.persistentCheckBox.setVerticalTextPosition(SwingConstants.BOTTOM);
+		this.persistentCheckBox.addActionListener(this);
+		toolBar.add(this.persistentCheckBox);
+
+		toolBar.addSeparator();
+
+		this.closeButton.setHorizontalTextPosition(SwingConstants.CENTER);
+		this.closeButton.setFocusable(false);
+		this.closeButton.setOpaque(false);
+		this.closeButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+		this.closeButton.addActionListener(event -> this.setVisible(false));
+		toolBar.add(this.closeButton);
+
 		GroupLayout layout = new GroupLayout(this.getContentPane());
 		this.getContentPane().setLayout(layout);
 		layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -212,6 +240,8 @@ public class QuickFindDialog extends JDialog implements DocumentListener, Action
 		this.ignoreCaseCheckBox.setText(this.ignoreCase);
 		this.regexCheckBox.setText(this.useRegex);
 		this.wrapCheckBox.setText(this.wrap);
+		this.persistentCheckBox.setText(this.persistent);
+		this.closeButton.setText(this.close);
 		this.pack();
 	}
 
